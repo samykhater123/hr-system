@@ -1,0 +1,471 @@
+﻿<style>
+
+    th {
+        margin: 3px;
+        background-color: #808080;
+        color: #ffffff;
+        text-align: center;
+        min-width: 75px;
+        font-weight: bolder;
+    }
+
+    td {
+        margin: 3px 10px 3px 10px;
+        padding: 3px 10px 3px 10px;
+        background-color: #00ffff;
+        color: #000000;
+        min-width: 75px;
+    }
+
+    .inputext {
+        width: 100%;
+        border: solid 1px #ff0000;
+        color: blue;
+        text-align: center;
+    }
+
+    .datepicker {
+        z-index: 999 !important;
+    }
+
+    .container {
+        min-height: 450px;
+        margin-top: 50px;
+    }
+
+    #result2 {
+        margin-top: 10px;
+    }
+
+    #model_result {
+        margin-top: 10px;
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+</style>
+
+<section dir="rtl">
+    <hr />
+
+    <h1 style="text-align:center">تقرير  ميزان مراجعة </h1>
+    <hr />
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-1">
+                <select id="levelx">
+                    <option value="1" selected>مستوى أول</option>
+                    <option value="2">مستوى ثاني</option>
+                    <option value="3">مستوى ثالث</option>
+                    <option value="4">مستوى رابع</option>
+                    <option value="5">مستوى خامس</option>
+                    <option value="6">مستوى سادس</option>
+                    <option value="7">مستوى سابع</option>
+
+                </select>
+
+
+            </div>
+
+            <div class="col-lg-1">
+                <select id="treex">
+                </select>
+
+
+            </div>
+
+
+            <div class="col-lg-2">
+                <label>من</label>                <input id="date1" style="width:75%;" class="entrydate date-picker" data-date-format="dd-mm-yyyy" type="text" />
+            </div>
+            <div class="col-lg-2">
+                <label>إلى</label>
+
+                <input id="date2" style="width:75%;" class="entrydate date-picker" data-date-format="dd-mm-yyyy" type="text" />
+
+            </div>
+
+            <div class="col-lg-1">
+                <button id="showdate" class="btn btn-primary" style="width:100%;"> عرض </button>
+
+            </div>
+
+            <div class="col-lg-2" id="btntb">
+
+            </div>
+
+
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div id="loadingtb">
+
+                </div>
+                <table id="tbbalnce">
+
+                    <thead id="model_result_head" style=" border-collapse: separate;">
+                        <tr>
+                            <th data-name="account_code">كود الحساب</th>
+                            <th data-name="old_id">الرقم الأرشيفي </th>
+                            <th data-name="account_name">رئيسي </th>
+
+                            <th data-name="account_name">اسم الحساب </th>
+                            <th data-name="total_net_open_dept">رصيد مدين افتتاحي </th>
+                            <th data-name="total_net_open_creidt">رصيد دائن افتتاحي </th>
+                            <th data-name="total_net_dept">الحركة  مدين خلال المدة </th>
+                            <th data-name="total_net_creidt">الحركة دائن  خلال المدة </th>
+                            <th data-name="total_net_total_dept">إجمالي مدين </th>
+                            <th data-name="total_net_total_creidt">إجمالي دائن </th>
+                        </tr>
+
+                        <tr>
+                            <th></th>
+                            <th colspan="3" style="position:relative;">  فارق</th>
+                            <th colspan="2" id="total_net_open_var"> </th>
+                            <th colspan="2" id="total_var"> </th>
+                            <th colspan="2" id="total_net_total_var"> </th>
+
+                        </tr>
+                    </thead>
+                    <thead id="model_result_foot">
+                        <tr>
+                            <th></th>
+
+                            <th colspan="3">  إجمالي</th>
+                            <th id="total_net_open_dept"> </th>
+                            <th id="total_net_open_creidt"> </th>
+                            <th id="total_dept"> </th>
+                            <th id="total_creidt"> </th>
+                            <th id="total_net_total_dept"> </th>
+                            <th id="total_net_total_creidt"> </th>
+                        </tr>
+                    </thead>
+                    <tbody id="model_result"></tbody>
+
+
+                </table>
+            </div>
+            <div class="col-lg-12">
+                <div class="au-card m-b-30">
+                    <div class="au-card-inner">
+
+                        <h3 id="tit1" class="title-2 m-b-40 trans"></h3>
+                        <canvas id="canv1" class="chartjs-render-monitor"></canvas>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+</section>
+
+<script>
+
+
+let openedpalancdain=document.getElementById("total_net_open_dept");
+let openedpalancmadin=document.getElementById("total_net_open_creidt");
+let total_dept=document.getElementById("total_dept");
+let total_creidt=document.getElementById("total_creidt");
+let total_net_total_dept=document.getElementById("total_net_total_dept");
+let total_net_total_creidt=document.getElementById("total_net_total_creidt");
+
+let res1=document.getElementById("total_net_open_var");
+let res2=document.getElementById("total_var");
+let res3=document.getElementById("total_net_total_var");
+
+
+function result(){
+    let R1=openedpalancdain.nodeValue+openedpalancmadin.nodeValue;
+    let R2=total_dept.nodeValue-total_creidt.nodeValue;
+    let R3=total_net_total_dept.nodeValue-total_net_total_creidt.nodeValue;
+    res1.append(R1);
+    res2.append(R2);
+    res3.append(R3);
+
+}
+result();
+
+    $("#bt_supplier").click(function () {
+        choosesupplier(0);
+
+    });
+
+    $("#showdate").click(function () {
+        var date1 = datexformat($("#date1").val(), "MM-dd-yyyy");
+        var date2 = datexformat($("#date2").val(), "MM-dd-yyyy");
+
+
+
+        var daysdiff = datediff(date1, date2);
+        var msg = "";
+        if (daysdiff < 0) {
+            msg += "هناك خطأ في تحديد التاريخ راجع بيانات الإدخال ";
+
+        }
+
+
+
+
+        if (msg == "") {
+
+            getresu();
+        } else {
+
+
+            swal("تنبيه", msg);
+        }
+
+
+    });
+
+    function getfather() {
+       //  var date1 = datexformat($("#date1").val(), "MM-dd-yyyy");
+      //  var date2 = datexformat($("#date2").val(), "MM-dd-yyyy");
+      //  var parm = "('" + date1 + "','" + date2 + "','DBHelper.CompId()')";
+
+        //getjdata({ name: "Balance_sheet_function5", top: "100000", cols: "chart_name,chart_code", tbtype: "view", orderby: "chart_code", cond: " 1=1  group by chart_name,chart_code", parm: parm, help: "1"   },
+        //    function (data) {
+        //        Console.log(data)
+        //    });
+    }
+    function trradd(vax)
+    {
+        var isin = 0;
+        $("#treex option").each(function ()
+        {
+            var tn = $(this).text();
+           // var vax = $(this).val();
+            if (tn == vax)
+            {
+                isin = 1;
+            }
+        });
+        if (isin == 0)
+        {
+            $("#treex").append("<option value='" + vax  +"'  >" + vax +"</option>");
+        }
+
+    }
+
+    function getresu()
+    {
+
+        $("#model_result").empty();
+        var date1 = datexformat($("#date1").val(), "MM-dd-yyyy");
+        var date2 = datexformat($("#date2").val(), "MM-dd-yyyy");
+        var parm = "('" + date1 + "','" + date2 + "','DBHelper.CompId()')";
+        var cond = " levelx =" + $("#levelx").val();
+
+
+        getjdata({ name: "Balance_sheet_function5" , top: "100000", cols: "*", tbtype: "view", orderby: " account_code", cond: cond, parm: parm, help: "1", idload: "loadingtb" },
+            function (data)
+            {
+
+                trradd("الجميع");
+               // console.log(data);
+
+              //  var Country_name = data.map(top10 => top10.datevalue);
+              //  var netsales = data.map(top10 => Number(top10.sales).toFixed("0"));
+       //console.log(Country_name);
+          //        console.log(netsales);
+              //  bardraw({ id: "canv1", type: "bar", labels: Country_name, data: netsales, title: tit1, width: "100%", height: "300px" })
+                         var tit1 = "تقرير ميزان مراجعة من " + $("#date1").val() + " إلى " + $("#date2").val();
+
+                $("#model_result").empty();
+
+
+                console.log(data);
+                $.each(data, function (i, item) {
+
+                    $("#model_result").append("<tr data-vis='1'> <td>" + item.Account_code+ "</td><td class='filt_chart'>" + item.old_id + "</td><td class='filt_chart'>" + item.chart_name + "</td> <td>" + item.Account_name + "</td><td class='total_net_open_dept'>" + item.net_open_dept + "</td><td  class='total_net_open_creidt'>" + item.net_open_creidt + "</td><td class='total_dept'>" + item.dept + "</td><td  class='total_creidt'>" + item.creidt + "</td><td class='total_net_total_dept'>" + item.net_total_dept + "</td><td class='total_net_total_creidt'>" + item.net_total_creidt + "</td></tr>");
+                        trradd(item.chart_name);
+                });
+                $('#treex').on('change', function ()
+                {
+                    var pt = $(this).val();
+                    $(".filt_chart").each(function ()
+                    {
+                        $(this).parent().show();
+                          // $(this).parent().attr("data-vis", "1");
+                           $(this).parent().data("vis", "1");
+                     });
+
+                    if (pt != "الجميع")
+                    {
+                         $(".filt_chart").each(function ()
+                    {
+                        var fitext = $(this).text();
+                             if (fitext != pt) {
+                                 $(this).parent().hide();
+                               //  $(this).parent().attr("data-vis", "0");
+                                 $(this).parent().data("vis", "0");
+                             } else
+                             {
+                               //   $(this).parent().attr("data-vis", "1");
+                                 $(this).parent().data("vis", "1");
+                             }
+                         });
+
+                         addRows();
+                    }
+
+
+               });
+
+                addRows();
+                $('#treex').select2();
+
+            }
+            , function (slx) {
+
+                var idran = uuidv4();
+                var idexcel = uuidv4();
+                $("#btntb").html('<button id="' + idran + '" style="width:50%;" class="btn btn-success">print </button><button id="' + idexcel + '" style="width:50%;" class="btn btn-primary">excel </button>');
+
+                $("#" + idran).click(function () {
+
+                    // var lin = "../../rep.aspx?sl=" + slx + "&rdlc=Report_finance_approved_report" + "&ti=" + ' قيود' + $('#transtype').val().replace('0', 'يومية') + ' من (' + $("#date1").val() + ') إلى (' + $("#date2").val() + ') ';
+
+                    var brst = $("#levelx option:selected").text();
+                    var brnam = '';
+
+
+
+                    var lin = "../../admin/Print_sl?sl=" + slx + "&titlex=تقرير ميزان مراجعة  " + brst + '&date1=' + $('#date1').val() + '&date2=' + $('#date2').val() + "&land=0&rename=dept=حركة مدين,creidt=حركة دائن,net_total_dept=إجمالي مدين,net_total_creidt=إجمالي دائن,net_open_dept=أول مدة مدين,net_open_creidt=أول مدة دائن,Account_name=اسم الحساب,Account_code=كود&colpr=Account_name,Account_code,dept,creidt,net_total_dept,net_total_creidt,net_open_dept,net_open_creidt&sumx=dept,creidt,net_total_dept,net_total_creidt,net_open_dept,net_open_creidt&colpr=Account_name,Account_code,dept,creidt,net_total_dept,net_total_creidt,net_open_dept,net_open_creidt" + brnam;
+
+
+                    window.open(lin, '_blank');
+
+
+
+                });
+
+                $("#" + idexcel).click(function () {
+                    var lin = "../../admin/expo_excel?sl=" + slx + "&urx=url";
+                    $.post(lin, {}, function (datg, sui) {
+
+                        // window.open(datg, '_blank');
+                        window.location = datg;
+                    });
+
+
+
+                });
+            });
+
+    }
+    function choosesupplier(i) {
+
+
+
+
+        var rw = $("#supplier_result").find('tr').eq(i);
+        var cust_id = rw.first().data('id');
+        var custname = rw.find('td').eq(1).text();
+
+        $("#suppleir_name_ser").val(custname);
+        $("#suppleir_name_ser").data("id", cust_id);
+        $("#supplier_result").empty();
+
+    }
+
+
+
+    var start = gedateadd("dd-MM-yyyy", -30);
+    var end = gedatenowx("dd-MM-yyyy");
+    var yy = new Date().getFullYear();
+    $("#date1").val( '01-01-' +yy );
+
+    $("#date2").val(end);
+
+    $('.date-picker').datepicker({
+        autoclose: true,
+        todayHighlight: true
+    });
+      getfather();
+    $('#suppleir_name_ser').on('keypress', function (e) {
+        if (e.which === 13) {
+
+            choosesupplier(0);
+        }
+    });
+
+    function addRows()
+    {
+
+
+        $("#model_result_foot tr").first().find("th").each(function ()
+        {
+            try {
+
+
+            var idname = $(this).attr("id");
+            var tot = 0;
+
+
+                          $("#model_result").find("td").each(function ()
+            {
+                              try {
+
+
+
+                var cname = $(this).attr("class");
+
+            if (idname == cname)
+            {
+                if ($(this).parent().data("vis") != "0")
+                                  {
+                      tot += Number($(this).html());
+                                  }
+
+
+                }
+ } catch (err) {
+
+                }
+
+            });
+
+            $("#" + idname).html(tot.toFixed('00'));
+             } catch (err) {
+
+                }
+
+
+        });
+
+        let openedpalancdain=document.getElementById("total_net_open_dept");
+let openedpalancmadin=document.getElementById("total_net_open_creidt");
+let total_dept=document.getElementById("total_dept");
+let total_creidt=document.getElementById("total_creidt");
+let total_net_total_dept=document.getElementById("total_net_total_dept");
+let total_net_total_creidt=document.getElementById("total_net_total_creidt");
+
+let res1=document.getElementById("total_net_open_var");
+let res2=document.getElementById("total_var");
+let res3=document.getElementById("total_net_total_var");
+
+let R1=Number(openedpalancdain.innerHTML)-Number(openedpalancmadin.innerHTML);
+    let R2=Number(total_dept.innerHTML)-Number(total_creidt.innerHTML);
+    let R3=Number(total_net_total_dept.innerHTML)-Number(total_net_total_creidt.innerHTML);
+    res1.innerHTML=R1;
+    res2.innerHTML=R2;
+    res3.innerHTML=R3;
+
+
+
+
+
+}
+
+</script>
+
